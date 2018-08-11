@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    sam-app
+
+    Sample SAM Template for sam-app
+    
+Parameters:
+  DarkskyApiKey:
+    Type: String
+    Description: DarkSky API key
+  LaMetricToken:
+    Type: String
+    Description: LaMetric API token
+  LaMetricKey:
+    Type: String
+    Description: LaMetric app key
+  Latitude:
+    Type: String
+  Longitude:
+    Type: String
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+    Function:
+        Timeout: 5
+
+
+Resources:
+
+    WeatherUpdateFunction:
+        Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+        Properties:
+            CodeUri: darksky/
+            Handler: app.lambda_handler
+            Runtime: python3.6
+            Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+                Variables:
+                    darksky_apikey: !Ref DarkskyApiKey
+                    latitude: !Ref Latitude
+                    longitude: !Ref Longitude
+                    lametric_token: !Ref LaMetricToken
+                    lametric_key: !Ref LaMetricKey
+            Events:
+                UpdateWeather:
+                    Type: Schedule # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+                    Properties:
+                      Schedule: "cron(0/30 6-23 * * ? *)"
+
+Outputs:
+    WeatherFunction:
+      Description: "Hello World Lambda Function ARN"
+      Value: !GetAtt WeatherUpdateFunction.Arn
+
+    WeatherFunctionRole:
+      Description: "Implicit IAM Role created for Hello World function"
+      Value: !GetAtt WeatherUpdateFunction.Arn
